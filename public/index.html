@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>TODO App</title>
+    <style>
+      .logout-btn {
+        padding: 10px 20px;
+        background-color: black;
+        color: white;
+        border: none;
+        cursor: pointer;
+        font-size: 16px;
+      }
+      .todo-container {
+        margin-top: 20px;
+      }
+      .todo-item {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        border: 1px solid black;
+        padding: 5px;
+        width: 300px;
+      }
+      .todo-item button {
+        background-color: red;
+        color: white;
+        border: none;
+        cursor: pointer;
+        padding: 5px 10px;
+      }
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+      let todoList = [];
+
+      function adder() {
+        const item = document.querySelector(".inputboxhai").value;
+        if (!item) {
+          alert("Please enter a valid to-do item");
+          return;
+        }
+
+        todoList.push(item);
+        document.querySelector(".inputboxhai").value = "";
+        render();
+      }
+
+      function deleter(index) {
+        todoList.splice(index, 1);
+        render();
+      }
+
+      function render() {
+        const container = document.querySelector(".todo-container");
+        container.innerHTML = "";
+
+        todoList.forEach((item, index) => {
+          const divcre = document.createElement("div");
+          divcre.classList.add("todo-item");
+
+          const spanc = document.createElement("span");
+          spanc.innerHTML = item;
+
+          const buttonc = document.createElement("button");
+          buttonc.innerHTML = "delete";
+          buttonc.onclick = () => deleter(index);
+
+          divcre.appendChild(spanc);
+          divcre.appendChild(buttonc);
+
+          container.appendChild(divcre);
+        });
+      }
+
+      async function signUp() {
+        const username = document.querySelector(".up1").value;
+        const password = document.querySelector(".up2").value;
+
+        await axios({
+          method: "POST",
+          url: "http://localhost:3000/signup",
+          data: {
+            username: username,
+            password: password,
+          },
+        });
+      }
+
+      async function signIn() {
+        const username = document.querySelector(".in1").value;
+        const password = document.querySelector(".in2").value;
+
+        try {
+          const response = await axios({
+            method: "POST",
+            url: "http://localhost:3000/signin",
+            data: {
+              username: username,
+              password: password,
+            },
+          });
+          localStorage.setItem("token", response.data.token);
+
+          document.querySelector(".primary").classList.add("hidden");
+          document.querySelector(".logout-btn").classList.remove("hidden");
+
+          const divc = document.querySelector(".todo-section");
+          divc.innerHTML = "";
+
+          const newdiv = document.createElement("div");
+          const inputbox = document.createElement("input");
+          inputbox.type = "text";
+          inputbox.placeholder = "add-to-do";
+          inputbox.setAttribute("class", "inputboxhai");
+
+          const button = document.createElement("button");
+          button.innerHTML = "add";
+          button.onclick = adder;
+
+          newdiv.append(inputbox);
+          newdiv.append(button);
+
+          divc.appendChild(newdiv);
+
+          const todoContainer = document.createElement("div");
+          todoContainer.setAttribute("class", "todo-container");
+          divc.appendChild(todoContainer);
+
+          render();
+        } catch (e) {
+          alert(e.message);
+        }
+      }
+
+      function logout() {
+        localStorage.removeItem("token");
+        alert("Signed out");
+
+        document.querySelector(".primary").classList.remove("hidden");
+        document.querySelector(".logout-btn").classList.add("hidden");
+        document.querySelector(".todo-section").innerHTML = "";
+      }
+    </script>
+
+    <div class="primary">
+      <div>
+        <input
+          type="text"
+          class="up1 SignUpUsername"
+          placeholder="Enter username"
+        />
+        <input
+          type="text"
+          class="up2 SignUpPassword"
+          placeholder="Enter password"
+        />
+        <button onclick="signUp()">Sign Up</button>
+      </div>
+      <div class="signin-section">
+        <input
+          type="text"
+          class="in1 SignInUsername"
+          placeholder="Enter username"
+        />
+        <input
+          type="text"
+          class="in2 SignInPassword"
+          placeholder="Enter password"
+        />
+        <button onclick="signIn()">Sign In</button>
+      </div>
+    </div>
+
+    <div class="todo-section"></div>
+    <button onclick="logout()" class="logout-btn hidden">Logout</button>
+  </body>
+</html>
